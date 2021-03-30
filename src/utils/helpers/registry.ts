@@ -3,10 +3,8 @@ import {
   ContractCreator,
   Token
 } from "../../../generated/schema";
-import { Address } from "@graphprotocol/graph-ts";
 import {
   CollateralERC20,
-  FeeERC20,
   ExpiringMultiParty,
   ExpiringMultiPartyCreator
 } from "../../../generated/templates";
@@ -28,6 +26,10 @@ export function getOrCreateFinancialContract(
     contract.totalCollateralDeposited = BIGDECIMAL_ZERO;
     contract.totalCollateralWithdrawn = BIGDECIMAL_ZERO;
     contract.cumulativeFeeMultiplier = BIGDECIMAL_ONE; // Hardcoded in the contract
+    contract.cumulativeFundingRateMultiplier = BIGDECIMAL_ONE; 
+    // Note that this doesn't neccessarily default to 1, 
+    // but we'll update on the first contract event. And we need to make EMP's set this to 
+    // 1 by default.
 
     ExpiringMultiParty.create(Address.fromString(id));
   }
@@ -54,8 +56,7 @@ export function getOrCreateContractCreator(
 export function getOrCreateToken(
   tokenAddress: Address,
   persist: boolean = true,
-  indexAsCollateral: boolean = false,
-  indexAsFeeToken: boolean = false
+  indexAsCollateral: boolean = false
 ): Token {
   let addressString = tokenAddress.toHexString();
 
@@ -76,14 +77,8 @@ export function getOrCreateToken(
       : DEFAULT_DECIMALS;
     token.name = !tokenName.reverted ? tokenName.value : "";
     token.symbol = !tokenSymbol.reverted ? tokenSymbol.value : "";
-    token.indexingAsFeeToken = false;
     token.indexingAsCollateral = false;
     token.isOnWhitelist = false;
-
-    if (indexAsFeeToken) {
-      FeeERC20.create(tokenAddress);
-      token.indexingAsFeeToken = true;
-    }
 
     if (indexAsCollateral) {
       CollateralERC20.create(tokenAddress);
@@ -93,12 +88,6 @@ export function getOrCreateToken(
     if (persist) {
       token.save();
     }
-  }
-
-  if (indexAsFeeToken && !token.indexingAsFeeToken) {
-    FeeERC20.create(tokenAddress);
-    token.indexingAsFeeToken = true;
-    token.save();
   }
 
   if (indexAsCollateral && !token.indexingAsCollateral) {

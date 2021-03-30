@@ -1,6 +1,4 @@
 import {
-  FinalFeesPaid,
-  RegularFeesPaid,
   Withdrawal,
   Deposit,
   Redeem,
@@ -24,12 +22,8 @@ import {
 import { Transfer } from "../../generated/templates/CollateralERC20/ERC20";
 import { Store } from "../../generated/Store/Store";
 import {
-  getOrCreateStore,
-  getOrCreateUser,
   getOrCreateToken,
   getOrCreateFinancialContract,
-  getOrCreateRegularFeePaidEvent,
-  getOrCreateFinalFeePaidEvent,
   getOrCreatePositionCreatedEvent,
   getOrCreateSettleExpiredPositionEvent,
   getOrCreateRedeemEvent,
@@ -132,54 +126,6 @@ function updateEMP(empAddress: Address): void {
   );
 
   emp.save();
-}
-
-// - event: FinalFeesPaid(indexed uint256)
-//   handler: handleFinalFeesPaid
-
-export function handleFinalFeesPaid(event: FinalFeesPaid): void {
-  let store = getOrCreateStore();
-  let feePaidEvent = getOrCreateFinalFeePaidEvent(event);
-
-  updateEMP(event.address);
-
-  feePaidEvent.totalPaid = event.params.amount;
-  feePaidEvent.tx_hash = event.transaction.hash.toHexString();
-  feePaidEvent.block = event.block.number;
-  feePaidEvent.timestamp = event.block.timestamp;
-  feePaidEvent.store = store.id;
-  feePaidEvent.contract = event.address.toHexString();
-
-  store.finalFeesPaid = store.finalFeesPaid + feePaidEvent.totalPaid;
-  store.totalFeesPaid = store.regularFeesPaid + store.finalFeesPaid;
-
-  feePaidEvent.save();
-  store.save();
-}
-
-// - event: RegularFeesPaid(indexed uint256,indexed uint256)
-//   handler: handleRegularFeesPaid
-
-export function handleRegularFeesPaid(event: RegularFeesPaid): void {
-  let store = getOrCreateStore();
-  let feePaidEvent = getOrCreateRegularFeePaidEvent(event);
-
-  updateEMP(event.address);
-
-  feePaidEvent.regularFee = event.params.regularFee;
-  feePaidEvent.lateFee = event.params.lateFee;
-  feePaidEvent.totalPaid = feePaidEvent.regularFee + feePaidEvent.lateFee;
-  feePaidEvent.tx_hash = event.transaction.hash.toHexString();
-  feePaidEvent.block = event.block.number;
-  feePaidEvent.timestamp = event.block.timestamp;
-  feePaidEvent.store = store.id;
-  feePaidEvent.contract = event.address.toHexString();
-
-  store.regularFeesPaid = store.regularFeesPaid + feePaidEvent.totalPaid;
-  store.totalFeesPaid = store.regularFeesPaid + store.finalFeesPaid;
-
-  feePaidEvent.save();
-  store.save();
 }
 
 // - event: PositionCreated(indexed address,indexed uint256,indexed uint256)
@@ -413,7 +359,6 @@ export function handleLiquidationCreated(event: LiquidationCreated): void {
     .concat(event.logIndex.toString());
   let liquidationEvent = getOrCreateLiquidationCreatedEvent(eventId);
   let liquidation = getOrCreateLiquidation(liquidationId);
-  let liquidator = getOrCreateUser(event.params.liquidator);
 
   updateSponsorPositionAndEMP(event.address, event.params.sponsor);
 
@@ -443,7 +388,7 @@ export function handleLiquidationCreated(event: LiquidationCreated): void {
   liquidation.sponsor = event.params.sponsor.toHexString();
   liquidation.position = positionId;
   liquidation.contract = event.address.toHexString();
-  liquidation.liquidator = liquidator.id;
+  liquidation.liquidator = event.params.liquidator;
   liquidation.liquidationId = event.params.liquidationId;
   liquidation.tokensLiquidated = toDecimal(
     event.params.tokensOutstanding,
@@ -487,7 +432,6 @@ export function handleLiquidationDisputed(event: LiquidationDisputed): void {
     .concat(event.logIndex.toString());
   let liquidationEvent = getOrCreateLiquidationDisputedEvent(eventId);
   let liquidation = getOrCreateLiquidation(liquidationId);
-  let disputer = getOrCreateUser(event.params.disputer);
 
   updateSponsorPositionAndEMP(event.address, event.params.sponsor);
 
@@ -503,7 +447,7 @@ export function handleLiquidationDisputed(event: LiquidationDisputed): void {
   liquidationEvent.liquidationId = event.params.liquidationId;
 
   liquidation.status = LIQUIDATION_PENDING_DISPUTE;
-  liquidation.disputer = disputer.id;
+  liquidation.disputer = event.params.disputer;
   liquidation.disputeBondAmount = toDecimal(event.params.disputeBondAmount);
 
   liquidationEvent.save();
@@ -624,25 +568,4 @@ export function handleCollateralTransfer(event: Transfer): void {
       toDecimal(event.params.value, token.decimals);
     toContract.save();
   }
-}
-
-// - event: Transfer(indexed address,indexed address,uint256)
-//   handler: handleFeeTransfer
-
-export function handleFeeTransfer(event: Transfer): void {
-  let store = getOrCreateStore();
-  let storeContract = Store.bind(Address.fromString(store.id));
-  let member = storeContract.try_getMember(BIGINT_ONE);
-  let withdrawer: Address | null = member.reverted ? null : member.value;
-
-  if (
-    event.params.from.toHexString() == store.id &&
-    withdrawer != null &&
-    withdrawer.toHexString() == event.params.to.toHexString()
-  ) {
-    store.withdrawer = withdrawer;
-    store.totalWithdrawn = store.totalWithdrawn + toDecimal(event.params.value);
-  }
-
-  store.save();
 }

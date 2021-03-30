@@ -7,12 +7,11 @@ import { CreatedExpiringMultiParty } from "../../generated/templates/ExpiringMul
 import { ExpiringMultiParty } from "../../generated/templates/ExpiringMultiParty/ExpiringMultiParty";
 import {
   getOrCreateFinancialContract,
-  getOrCreateUser,
   getOrCreateContractCreator,
   getOrCreateToken,
   calculateGCR
 } from "../utils/helpers";
-import { BIGINT_ONE, GOVERNOR_ADDRESS_STRING, BLACKLISTED_CREATORS } from "../utils/constants";
+import { BIGINT_ONE, EMP_CREATORS, PERP_CREATORS } from "../utils/constants";
 import { toDecimal } from "../utils/decimals";
 
 // - event: NewContractRegistered(indexed address,indexed address,address[])
@@ -20,10 +19,11 @@ import { toDecimal } from "../utils/decimals";
 export function handleNewContractRegistered(
   event: NewContractRegistered
 ): void {
+  // Check if EMP:
   if (
-    event.params.contractAddress.toHexString() != GOVERNOR_ADDRESS_STRING &&
-    !BLACKLISTED_CREATORS.includes(event.params.creator.toHexString())
+    EMP_CREATORS.includes(event.params.creator.toHexString())
   ) {
+    // TODO: Rename to `getOrCreateEmp`
     let contract = getOrCreateFinancialContract(
       event.params.contractAddress.toHexString()
     );
@@ -77,14 +77,9 @@ export function handleRemovedSharedMember(event: RemovedSharedMember): void {
 export function handleCreatedExpiringMultiParty(
   event: CreatedExpiringMultiParty
 ): void {
-  if (
-    event.params.expiringMultiPartyAddress.toHexString() !=
-    GOVERNOR_ADDRESS_STRING
-  ) {
     let contract = getOrCreateFinancialContract(
       event.params.expiringMultiPartyAddress.toHexString()
     );
-    let deployer = getOrCreateUser(event.params.deployerAddress);
     let empContract = ExpiringMultiParty.bind(
       event.params.expiringMultiPartyAddress
     );
@@ -101,18 +96,17 @@ export function handleCreatedExpiringMultiParty(
       let collateralToken = getOrCreateToken(
         collateral.value,
         true,
-        true,
-        false
+        true
       );
       contract.collateralToken = collateralToken.id;
     }
 
     if (!synthetic.reverted) {
-      let syntheticToken = getOrCreateToken(synthetic.value, true, false, true);
+      let syntheticToken = getOrCreateToken(synthetic.value, true, false);
       contract.syntheticToken = syntheticToken.id;
     }
 
-    contract.deployer = deployer.id;
+    contract.deployer = event.params.deployerAddress;
     contract.address = event.params.expiringMultiPartyAddress;
     contract.collateralRequirement = requirement.reverted
       ? null
@@ -137,6 +131,4 @@ export function handleCreatedExpiringMultiParty(
     );
 
     contract.save();
-    deployer.save();
-  }
 }

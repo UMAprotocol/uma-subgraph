@@ -1,6 +1,4 @@
 import {
-  RegularFeePaidEvent,
-  FinalFeePaidEvent,
   PositionCreatedEvent,
   SettleExpiredPositionEvent,
   RedeemEvent,
@@ -16,38 +14,6 @@ import {
 } from "../../../generated/schema";
 import { BigInt, BigDecimal, ethereum } from "@graphprotocol/graph-ts";
 import { BIGDECIMAL_ZERO } from "../constants";
-
-export function getOrCreateRegularFeePaidEvent(
-  ethereumEvent: ethereum.Event
-): RegularFeePaidEvent {
-  let id = ethereumEvent.transaction.hash
-    .toHexString()
-    .concat("-")
-    .concat(ethereumEvent.logIndex.toString());
-
-  let event = new RegularFeePaidEvent(id);
-  event.tx_hash = ethereumEvent.transaction.hash.toHexString();
-  event.block = ethereumEvent.block.number;
-  event.timestamp = ethereumEvent.block.timestamp;
-
-  return event as RegularFeePaidEvent;
-}
-
-export function getOrCreateFinalFeePaidEvent(
-  ethereumEvent: ethereum.Event
-): FinalFeePaidEvent {
-  let id = ethereumEvent.transaction.hash
-    .toHexString()
-    .concat("-")
-    .concat(ethereumEvent.logIndex.toString());
-
-  let event = new FinalFeePaidEvent(id);
-  event.tx_hash = ethereumEvent.transaction.hash.toHexString();
-  event.block = ethereumEvent.block.number;
-  event.timestamp = ethereumEvent.block.timestamp;
-
-  return event as FinalFeePaidEvent;
-}
 
 export function getOrCreatePositionCreatedEvent(
   ethereumEvent: ethereum.Event
