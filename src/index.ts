@@ -16,7 +16,6 @@ export {
   handleLiquidationCreated,
   handleLiquidationCreatedNew,
   handleLiquidationDisputed,
-  handleLiquidationWithdrawn,
   handleDisputeSettled,
   handleCollateralTransfer,
   handleRequestTransferPosition,

@@ -337,22 +337,6 @@ type LiquidationDisputedEvent implements LiquidationEvent @entity {
   disputeBondAmount: BigInt!
 }
 
-type LiquidationWithdrawnEvent implements LiquidationEvent @entity {
-  id: ID!
-
-  tx_hash: String!
-
-  block: BigInt!
-
-  timestamp: BigInt!
-
-  liquidation: Liquidation!
-
-  sponsor: Bytes!
-
-  amountWithdrawn: BigInt!
-}
-
 type LiquidationDisputeSettledEvent implements LiquidationEvent @entity {
   id: ID!
 

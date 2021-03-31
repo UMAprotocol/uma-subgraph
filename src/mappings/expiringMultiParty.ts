@@ -10,7 +10,6 @@ import {
   LiquidationCreated,
   LiquidationCreated1,
   LiquidationDisputed,
-  WithdrawLiquidationCall,
   DisputeSettled,
   RequestWithdrawalExecuted,
   RequestWithdrawalCanceled,
@@ -20,7 +19,6 @@ import {
   RequestTransferPosition
 } from "../../generated/templates/ExpiringMultiParty/ExpiringMultiParty";
 import { Transfer } from "../../generated/templates/CollateralERC20/ERC20";
-import { Store } from "../../generated/Store/Store";
 import {
   getOrCreateToken,
   getOrCreateFinancialContract,
@@ -35,17 +33,15 @@ import {
   getOrCreateLiquidationCreatedEvent,
   getOrCreateLiquidationDisputedEvent,
   getOrCreateLiquidationDisputeSettledEvent,
-  getOrCreateLiquidationWithdrawnEvent,
   calculateGCR
 } from "../utils/helpers";
-import { BigDecimal, Address } from "@graphprotocol/graph-ts";
+import { Address } from "@graphprotocol/graph-ts";
 import { toDecimal } from "../utils/decimals";
 import {
   LIQUIDATION_PRE_DISPUTE,
   LIQUIDATION_PENDING_DISPUTE,
   LIQUIDATION_DISPUTE_SUCCEEDED,
-  LIQUIDATION_DISPUTE_FAILED,
-  BIGINT_ONE
+  LIQUIDATION_DISPUTE_FAILED
 } from "../utils/constants";
 
 function updateSponsorPositionAndEMP(
@@ -449,46 +445,6 @@ export function handleLiquidationDisputed(event: LiquidationDisputed): void {
   liquidation.status = LIQUIDATION_PENDING_DISPUTE;
   liquidation.disputer = event.params.disputer;
   liquidation.disputeBondAmount = toDecimal(event.params.disputeBondAmount);
-
-  liquidationEvent.save();
-  liquidation.save();
-}
-
-// - function: withdrawLiquidation(uint256,address)
-//   handler: handleLiquidationWithdrawn
-
-export function handleLiquidationWithdrawn(
-  call: WithdrawLiquidationCall
-): void {
-  let liquidationId = call.inputs.sponsor
-    .toHexString()
-    .concat("-")
-    .concat(call.to.toHexString())
-    .concat("-")
-    .concat(call.inputs.liquidationId.toString());
-  let eventId = liquidationId
-    .concat("-")
-    .concat(call.transaction.hash.toHexString());
-  let liquidationEvent = getOrCreateLiquidationWithdrawnEvent(eventId);
-  let liquidation = getOrCreateLiquidation(liquidationId);
-  let emp = getOrCreateFinancialContract(call.to.toHexString());
-  let collateralToken = getOrCreateToken(
-    Address.fromString(emp.collateralToken)
-  );
-
-  updateSponsorPositionAndEMP(call.to, call.inputs.sponsor);
-
-  liquidationEvent.tx_hash = call.transaction.hash.toHexString();
-  liquidationEvent.block = call.block.number;
-  liquidationEvent.timestamp = call.block.timestamp;
-  liquidationEvent.liquidation = liquidation.id;
-  liquidationEvent.amountWithdrawn = call.outputs.amountWithdrawn.rawValue;
-  liquidationEvent.sponsor = call.inputs.sponsor;
-
-  liquidation.amountWithdrawn = toDecimal(
-    liquidationEvent.amountWithdrawn,
-    collateralToken.decimals
-  );
 
   liquidationEvent.save();
   liquidation.save();

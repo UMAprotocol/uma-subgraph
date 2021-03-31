@@ -9,10 +9,9 @@ import {
   Liquidation,
   LiquidationCreatedEvent,
   LiquidationDisputedEvent,
-  LiquidationWithdrawnEvent,
   LiquidationDisputeSettledEvent
 } from "../../../generated/schema";
-import { BigInt, BigDecimal, ethereum } from "@graphprotocol/graph-ts";
+import { BigDecimal, ethereum } from "@graphprotocol/graph-ts";
 import { BIGDECIMAL_ZERO } from "../constants";
 
 export function getOrCreatePositionCreatedEvent(
@@ -194,17 +193,4 @@ export function getOrCreateLiquidationDisputeSettledEvent(
   }
 
   return event as LiquidationDisputeSettledEvent;
-}
-
-export function getOrCreateLiquidationWithdrawnEvent(
-  id: String,
-  createIfNotFound: boolean = true
-): LiquidationWithdrawnEvent {
-  let event = LiquidationWithdrawnEvent.load(id);
-
-  if (event == null && createIfNotFound) {
-    event = new LiquidationWithdrawnEvent(id);
-  }
-
-  return event as LiquidationWithdrawnEvent;
 }

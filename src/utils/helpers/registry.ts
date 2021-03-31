@@ -6,11 +6,13 @@ import {
 import {
   CollateralERC20,
   ExpiringMultiParty,
-  ExpiringMultiPartyCreator
+  ExpiringMultiPartyCreator,
+  Perpetual,
+  PerpetualCreator
 } from "../../../generated/templates";
 import { ERC20 } from "../../../generated/templates/ExpiringMultiPartyCreator/ERC20";
 import { Address } from "@graphprotocol/graph-ts";
-import { DEFAULT_DECIMALS } from "../decimals";
+import { DEFAULT_DECIMALS, toDecimal } from "../decimals";
 import { BIGDECIMAL_ZERO, BIGDECIMAL_ONE } from "../constants";
 
 export function getOrCreateFinancialContract(
@@ -27,11 +29,31 @@ export function getOrCreateFinancialContract(
     contract.totalCollateralWithdrawn = BIGDECIMAL_ZERO;
     contract.cumulativeFeeMultiplier = BIGDECIMAL_ONE; // Hardcoded in the contract
     contract.cumulativeFundingRateMultiplier = BIGDECIMAL_ONE; 
-    // Note that this doesn't neccessarily default to 1, 
-    // but we'll update on the first contract event. And we need to make EMP's set this to 
-    // 1 by default.
+    // EMP's don't have a CFRM so its TBD whether its better to default to 1, 0 or something nonsensical like -1.
 
     ExpiringMultiParty.create(Address.fromString(id));
+  }
+
+  return contract as FinancialContract;
+}
+
+export function getOrCreatePerpetualContract(
+  id: String,
+  createIfNotFound: boolean = true
+): FinancialContract {
+  let contract = FinancialContract.load(id);
+
+  if (contract == null && createIfNotFound) {
+    contract = new FinancialContract(id);
+    contract.totalSyntheticTokensCreated = BIGDECIMAL_ZERO;
+    contract.totalSyntheticTokensBurned = BIGDECIMAL_ZERO;
+    contract.totalCollateralDeposited = BIGDECIMAL_ZERO;
+    contract.totalCollateralWithdrawn = BIGDECIMAL_ZERO;
+    contract.cumulativeFeeMultiplier = BIGDECIMAL_ONE; // Hardcoded in the contract
+    contract.cumulativeFundingRateMultiplier = BIGDECIMAL_ONE; // Can't always assume it's 1 but its a reasonable fix
+    // for now.
+
+    Perpetual.create(Address.fromString(id));
   }
 
   return contract as FinancialContract;
@@ -52,6 +74,23 @@ export function getOrCreateContractCreator(
 
   return contractCreator as ContractCreator;
 }
+
+export function getOrCreatePerpetualCreator(
+  id: String,
+  createIfNotFound: boolean = true
+): ContractCreator {
+  let contractCreator = ContractCreator.load(id);
+
+  if (contractCreator == null && createIfNotFound) {
+    contractCreator = new ContractCreator(id);
+    contractCreator.isRemoved = false;
+
+    PerpetualCreator.create(Address.fromString(id));
+  }
+
+  return contractCreator as ContractCreator;
+}
+
 
 export function getOrCreateToken(
   tokenAddress: Address,

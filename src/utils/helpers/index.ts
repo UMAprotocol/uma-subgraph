@@ -1,7 +1,9 @@
 export {
   getOrCreateFinancialContract,
   getOrCreateContractCreator,
-  getOrCreateToken
+  getOrCreateToken,
+  getOrCreatePerpetualContract,
+  getOrCreatePerpetualCreator
 } from "./registry";
 
 export {
@@ -16,6 +18,5 @@ export {
   getOrCreateLiquidationCreatedEvent,
   getOrCreateLiquidationDisputedEvent,
   getOrCreateLiquidationDisputeSettledEvent,
-  getOrCreateLiquidationWithdrawnEvent,
   calculateGCR
 } from "./expiringMultiParty";

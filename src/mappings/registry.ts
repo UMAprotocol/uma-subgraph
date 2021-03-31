@@ -5,8 +5,13 @@ import {
 } from "../../generated/Registry/Registry";
 import { CreatedExpiringMultiParty } from "../../generated/templates/ExpiringMultiPartyCreator/ExpiringMultiPartyCreator";
 import { ExpiringMultiParty } from "../../generated/templates/ExpiringMultiParty/ExpiringMultiParty";
+import { CreatedPerpetual } from "../../generated/templates/PerpetualCreator/PerpetualCreator";
+import { Perpetual } from "../../generated/templates/Perpetual/Perpetual";
+
 import {
+  getOrCreatePerpetualContract,
   getOrCreateFinancialContract,
+  getOrCreatePerpetualCreator,
   getOrCreateContractCreator,
   getOrCreateToken,
   calculateGCR
@@ -28,6 +33,23 @@ export function handleNewContractRegistered(
       event.params.contractAddress.toHexString()
     );
     let creator = getOrCreateContractCreator(
+      event.params.creator.toHexString()
+    );
+
+    contract.address = event.params.contractAddress;
+    contract.creator = creator.id;
+
+    contract.save();
+    creator.save();
+  } 
+  // Check if Perp:
+  else if (
+    PERP_CREATORS.includes(event.params.creator.toHexString())
+  ) {
+    let contract = getOrCreatePerpetualContract(
+      event.params.contractAddress.toHexString()
+    );
+    let creator = getOrCreatePerpetualCreator(
       event.params.creator.toHexString()
     );
 
@@ -132,3 +154,62 @@ export function handleCreatedExpiringMultiParty(
 
     contract.save();
 }
+
+// - event: CreatedPerpetual(indexed address,indexed address)
+//   handler: handleCreatedPerpetual
+
+export function handleCreatedPerpetual(
+  event: CreatedPerpetual
+): void {
+    let contract = getOrCreateFinancialContract(
+      event.params.perpetualAddress.toHexString()
+    );
+    let perpetualContract = Perpetual.bind(
+      event.params.perpetualAddress
+    );
+
+    let collateral = perpetualContract.try_collateralCurrency();
+    let synthetic = perpetualContract.try_tokenCurrency();
+    let requirement = perpetualContract.try_collateralRequirement();
+    let totalOutstanding = perpetualContract.try_totalTokensOutstanding();
+    let feeMultiplier = perpetualContract.try_cumulativeFeeMultiplier();
+    let rawCollateral = perpetualContract.try_rawTotalPositionCollateral();
+
+    if (!collateral.reverted) {
+      let collateralToken = getOrCreateToken(
+        collateral.value,
+        true,
+        true
+      );
+      contract.collateralToken = collateralToken.id;
+    }
+
+    if (!synthetic.reverted) {
+      let syntheticToken = getOrCreateToken(synthetic.value, true, false);
+      contract.syntheticToken = syntheticToken.id;
+    }
+
+    contract.deployer = event.params.deployerAddress;
+    contract.address = event.params.perpetualAddress;
+    contract.collateralRequirement = requirement.reverted
+      ? null
+      : toDecimal(requirement.value);
+    contract.totalTokensOutstanding = totalOutstanding.reverted
+      ? null
+      : toDecimal(totalOutstanding.value);
+    contract.cumulativeFeeMultiplier = feeMultiplier.reverted
+      ? null
+      : toDecimal(feeMultiplier.value);
+    contract.rawTotalPositionCollateral = rawCollateral.reverted
+      ? null
+      : toDecimal(rawCollateral.value);
+
+    contract.globalCollateralizationRatio = calculateGCR(
+      contract.rawTotalPositionCollateral,
+      contract.cumulativeFeeMultiplier,
+      contract.totalTokensOutstanding
+    );
+
+    contract.save();
+}
+
