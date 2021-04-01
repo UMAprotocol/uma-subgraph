@@ -30,10 +30,6 @@ dataSources:
       eventHandlers:
         - event: NewContractRegistered(indexed address,indexed address,address[])
           handler: handleNewContractRegistered
-        - event: AddedSharedMember(indexed uint256,indexed address,indexed address)
-          handler: handleAddedSharedMember
-        - event: RemovedSharedMember(indexed uint256,indexed address,indexed address)
-          handler: handleRemovedSharedMember
 templates:
   - name: CollateralERC20
     kind: ethereum/contract
@@ -69,6 +65,8 @@ templates:
       abis:
         - name: PerpetualCreator
           file: ./abis/PerpetualCreator.json
+        - name: ExpiringMultiPartyCreator
+          file: ./abis/ExpiringMultiPartyCreator.json
         - name: Perpetual
           file: ./abis/Perpetual.json
         - name: ERC20

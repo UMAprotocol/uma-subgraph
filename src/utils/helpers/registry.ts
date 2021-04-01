@@ -63,7 +63,6 @@ export function getOrCreateContractCreator(
 
   if (contractCreator == null && createIfNotFound) {
     contractCreator = new ContractCreator(id);
-    contractCreator.isRemoved = false;
 
     ExpiringMultiPartyCreator.create(Address.fromString(id));
   }
@@ -79,7 +78,6 @@ export function getOrCreatePerpetualCreator(
 
   if (contractCreator == null && createIfNotFound) {
     contractCreator = new ContractCreator(id);
-    contractCreator.isRemoved = false;
 
     PerpetualCreator.create(Address.fromString(id));
   }

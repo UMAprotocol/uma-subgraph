@@ -1,7 +1,5 @@
 import {
-  NewContractRegistered,
-  AddedSharedMember,
-  RemovedSharedMember
+  NewContractRegistered
 } from "../../generated/Registry/Registry";
 import { CreatedExpiringMultiParty } from "../../generated/templates/ExpiringMultiPartyCreator/ExpiringMultiPartyCreator";
 import { ExpiringMultiParty } from "../../generated/templates/ExpiringMultiParty/ExpiringMultiParty";
@@ -16,14 +14,16 @@ import {
   getOrCreateToken,
   calculateGCR
 } from "../utils/helpers";
-import { BIGINT_ONE, EMP_CREATORS, PERP_CREATORS } from "../utils/constants";
+import { EMP_CREATORS, PERP_CREATORS } from "../utils/constants";
 import { toDecimal } from "../utils/decimals";
+import { log } from "@graphprotocol/graph-ts";
 
 // - event: NewContractRegistered(indexed address,indexed address,address[])
 //   handler: handleNewContractRegistered
 export function handleNewContractRegistered(
   event: NewContractRegistered
 ): void {
+  log.warning(`emp? = ${EMP_CREATORS.includes(event.params.creator.toHexString())}, perp? = ${PERP_CREATORS.includes(event.params.creator.toHexString())}`,[]);
   // Check if EMP:
   if (
     EMP_CREATORS.includes(event.params.creator.toHexString())
@@ -61,38 +61,6 @@ export function handleNewContractRegistered(
   }
 }
 
-// - event: AddedSharedMember(indexed uint256,indexed address,indexed address)
-//   handler: handleAddedSharedMember
-
-export function handleAddedSharedMember(event: AddedSharedMember): void {
-  if (event.params.roleId == BIGINT_ONE) {
-    let creator = getOrCreateContractCreator(
-      event.params.newMember.toHexString()
-    );
-
-    creator.manager = event.params.manager;
-    creator.isRemoved = false;
-
-    creator.save();
-  }
-}
-
-// - event: RemovedSharedMember(indexed uint256,indexed address,indexed address)
-//   handler: handleRemovedSharedMember
-
-export function handleRemovedSharedMember(event: RemovedSharedMember): void {
-  if (event.params.roleId == BIGINT_ONE) {
-    let creator = getOrCreateContractCreator(
-      event.params.oldMember.toHexString()
-    );
-
-    creator.manager = event.params.manager;
-    creator.isRemoved = true;
-
-    creator.save();
-  }
-}
-
 // - event: CreatedExpiringMultiParty(indexed address,indexed address)
 //   handler: handleCreatedExpiringMultiParty
 
@@ -106,6 +74,11 @@ export function handleCreatedExpiringMultiParty(
       event.params.expiringMultiPartyAddress
     );
 
+    log.warning("emp = {}, deployer = {}", [
+      event.params.expiringMultiPartyAddress.toHexString(),
+      event.params.deployerAddress.toHexString()
+    ]);
+    
     let collateral = empContract.try_collateralCurrency();
     let synthetic = empContract.try_tokenCurrency();
     let requirement = empContract.try_collateralRequirement();
@@ -168,6 +141,10 @@ export function handleCreatedPerpetual(
       event.params.perpetualAddress
     );
 
+    log.warning("perpetual = {}, deployer = {}", [
+      event.params.perpetualAddress.toHexString(),
+      event.params.deployerAddress.toHexString()
+    ]);
     let collateral = perpetualContract.try_collateralCurrency();
     let synthetic = perpetualContract.try_tokenCurrency();
     let requirement = perpetualContract.try_collateralRequirement();

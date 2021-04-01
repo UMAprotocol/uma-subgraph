@@ -200,12 +200,6 @@ type ContractCreator @entity {
   "This entity represent a single contract creator. The id is the blockchain address of the Creator"
   id: ID!
 
-  "Whether or not this creator has been removed from the whitelist of creators"
-  isRemoved: Boolean!
-
-  "Manager of the contract creator address"
-  manager: Bytes
-
   "List of all the contracts created from this Creator"
   contractsCreated: [FinancialContract!]! @derivedFrom(field: "creator")
 }

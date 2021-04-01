@@ -1,8 +1,7 @@
 export {
   handleNewContractRegistered,
-  handleAddedSharedMember,
-  handleRemovedSharedMember,
-  handleCreatedExpiringMultiParty
+  handleCreatedExpiringMultiParty,
+  handleCreatedPerpetual
 } from "./mappings/registry";
 
 export {
