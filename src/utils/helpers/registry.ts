@@ -12,7 +12,7 @@ import {
 } from "../../../generated/templates";
 import { ERC20 } from "../../../generated/templates/ExpiringMultiPartyCreator/ERC20";
 import { Address } from "@graphprotocol/graph-ts";
-import { DEFAULT_DECIMALS, toDecimal } from "../decimals";
+import { DEFAULT_DECIMALS } from "../decimals";
 import { BIGDECIMAL_ZERO, BIGDECIMAL_ONE } from "../constants";
 
 export function getOrCreateFinancialContract(
@@ -28,8 +28,6 @@ export function getOrCreateFinancialContract(
     contract.totalCollateralDeposited = BIGDECIMAL_ZERO;
     contract.totalCollateralWithdrawn = BIGDECIMAL_ZERO;
     contract.cumulativeFeeMultiplier = BIGDECIMAL_ONE; // Hardcoded in the contract
-    contract.cumulativeFundingRateMultiplier = BIGDECIMAL_ONE; 
-    // EMP's don't have a CFRM so its TBD whether its better to default to 1, 0 or something nonsensical like -1.
 
     ExpiringMultiParty.create(Address.fromString(id));
   }
@@ -50,8 +48,6 @@ export function getOrCreatePerpetualContract(
     contract.totalCollateralDeposited = BIGDECIMAL_ZERO;
     contract.totalCollateralWithdrawn = BIGDECIMAL_ZERO;
     contract.cumulativeFeeMultiplier = BIGDECIMAL_ONE; // Hardcoded in the contract
-    contract.cumulativeFundingRateMultiplier = BIGDECIMAL_ONE; // Can't always assume it's 1 but its a reasonable fix
-    // for now.
 
     Perpetual.create(Address.fromString(id));
   }

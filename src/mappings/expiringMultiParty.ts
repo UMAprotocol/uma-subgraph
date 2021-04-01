@@ -340,7 +340,7 @@ export function handleRequestWithdrawalExecuted(
 // - event: LiquidationCreated(indexed address,indexed address,indexed uint256,uint256,uint256,uint256)
 //   handler: handleLiquidationCreated
 
-export function handleLiquidationCreated(event: LiquidationCreated): void {
+export function handleLiquidationCreated(event: LiquidationCreated1): void {
   let positionId = event.params.sponsor
     .toHexString()
     .concat("-")
@@ -407,8 +407,8 @@ export function handleLiquidationCreated(event: LiquidationCreated): void {
 // - event: LiquidationCreated(indexed address,indexed address,indexed uint256,uint256,uint256,uint256,uint256)
 //   handler: handleLiquidationCreatedNew
 
-export function handleLiquidationCreatedNew(event: LiquidationCreated1): void {
-  handleLiquidationCreated(event as LiquidationCreated);
+export function handleLiquidationCreatedNew(event: LiquidationCreated): void {
+  handleLiquidationCreated(event as LiquidationCreated1);
 }
 
 // - event: LiquidationDisputed(indexed address,indexed address,indexed address,uint256,uint256)

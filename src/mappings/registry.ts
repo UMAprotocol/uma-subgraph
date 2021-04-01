@@ -161,7 +161,7 @@ export function handleCreatedExpiringMultiParty(
 export function handleCreatedPerpetual(
   event: CreatedPerpetual
 ): void {
-    let contract = getOrCreateFinancialContract(
+    let contract = getOrCreatePerpetualContract(
       event.params.perpetualAddress.toHexString()
     );
     let perpetualContract = Perpetual.bind(

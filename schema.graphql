@@ -33,8 +33,6 @@ type FinancialContract @entity {
 
   cumulativeFeeMultiplier: BigDecimal
 
-  cumulativeFundingRateMultiplier: BigDecimal
-
   globalCollateralizationRatio: BigDecimal
 
   totalSyntheticTokensCreated: BigDecimal!

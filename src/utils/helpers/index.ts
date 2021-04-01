@@ -19,4 +19,5 @@ export {
   getOrCreateLiquidationDisputedEvent,
   getOrCreateLiquidationDisputeSettledEvent,
   calculateGCR
-} from "./expiringMultiParty";
+} from "./financialContract";
+

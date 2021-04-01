@@ -25,6 +25,8 @@ dataSources:
           file: ./abis/Registry.json
         - name: ExpiringMultiPartyCreator
           file: ./abis/ExpiringMultiPartyCreator.json
+        - name: PerpetualCreator
+          file: ./abis/PerpetualCreator.json
       eventHandlers:
         - event: NewContractRegistered(indexed address,indexed address,address[])
           handler: handleNewContractRegistered
@@ -91,29 +93,29 @@ templates:
           file: ./abis/Perpetual.json
       eventHandlers:
         - event: PositionCreated(indexed address,indexed uint256,indexed uint256)
-          handler: handlePositionCreated
+          handler: handlePositionCreatedPerp
         - event: Redeem(indexed address,indexed uint256,indexed uint256)
-          handler: handleRedeem
+          handler: handleRedeemPerp
         - event: Deposit(indexed address,indexed uint256)
-          handler: handleDeposit
+          handler: handleDepositPerp
         - event: Withdrawal(indexed address,indexed uint256)
-          handler: handleWithdrawal
+          handler: handleWithdrawalPerp
         - event: NewSponsor(indexed address)
-          handler: handleNewSponsor
+          handler: handleNewSponsorPerp
         - event: EndedSponsorPosition(indexed address)
-          handler: handleEndedSponsorPosition
+          handler: handleEndedSponsorPositionPerp
         - event: LiquidationCreated(indexed address,indexed address,indexed uint256,uint256,uint256,uint256,uint256)
-          handler: handleLiquidationCreated
+          handler: handleLiquidationCreatedNewPerp
         - event: LiquidationDisputed(indexed address,indexed address,indexed address,uint256,uint256)
-          handler: handleLiquidationDisputed
+          handler: handleLiquidationDisputedPerp
         - event: DisputeSettled(indexed address,indexed address,indexed address,address,uint256,bool)
-          handler: handleDisputeSettled
+          handler: handleDisputeSettledPerp
         - event: RequestWithdrawal(indexed address,indexed uint256)
-          handler: handleRequestWithdrawal
+          handler: handleRequestWithdrawalPerp
         - event: RequestWithdrawalCanceled(indexed address,indexed uint256)
-          handler: handleRequestWithdrawalCanceled
+          handler: handleRequestWithdrawalCanceledPerp
         - event: RequestWithdrawalExecuted(indexed address,indexed uint256)
-          handler: handleRequestWithdrawalExecuted
+          handler: handleRequestWithdrawalExecutedPerp
   - name: ExpiringMultiPartyCreator
     kind: ethereum/contract
     network: kovan
