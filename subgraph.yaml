@@ -103,7 +103,7 @@ templates:
         - event: EndedSponsorPosition(indexed address)
           handler: handleEndedSponsorPositionPerp
         - event: LiquidationCreated(indexed address,indexed address,indexed uint256,uint256,uint256,uint256,uint256)
-          handler: handleLiquidationCreatedNewPerp
+          handler: handleLiquidationCreatedPerp
         - event: LiquidationDisputed(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleLiquidationDisputedPerp
         - event: DisputeSettled(indexed address,indexed address,indexed address,address,uint256,bool)
