@@ -1,3 +1,6 @@
+# DEPRECATED REPOSITORY
+This repo is discontinued and its subgraph is a package [here](https://github.com/UMAprotocol/subgraphs)
+
 ## UMA Protocol Subgraph
 
 The subgraph, as well as the protocol itself, consist in two distinct but cooperating parts. The DVM/Oracle part, which handles the price verification mechanism of the protocol, and the Synthetic Token "tools", which allow users to create synthetic tokens to create all kinds of Financial Contracts.
