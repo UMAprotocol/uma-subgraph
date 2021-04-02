@@ -16,14 +16,20 @@ import {
 } from "../utils/helpers";
 import { EMP_CREATORS, PERP_CREATORS } from "../utils/constants";
 import { toDecimal } from "../utils/decimals";
-import { log } from "@graphprotocol/graph-ts";
+import { log, BigInt } from "@graphprotocol/graph-ts";
 
 // - event: NewContractRegistered(indexed address,indexed address,address[])
 //   handler: handleNewContractRegistered
 export function handleNewContractRegistered(
   event: NewContractRegistered
 ): void {
-  log.warning(`emp? = ${EMP_CREATORS.includes(event.params.creator.toHexString())}, perp? = ${PERP_CREATORS.includes(event.params.creator.toHexString())}`,[]);
+  log.warning(
+    `emp? = {}, perp? = {}`,
+    [
+      BigInt.fromI32(EMP_CREATORS.includes(event.params.creator.toHexString())).toString(),
+      BigInt.fromI32(PERP_CREATORS.includes(event.params.creator.toHexString())).toString(),
+    ]
+  );
   // Check if EMP:
   if (
     EMP_CREATORS.includes(event.params.creator.toHexString())
